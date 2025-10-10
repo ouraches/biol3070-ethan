@@ -12,16 +12,16 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 # ABSTRACT
 
-Fill in abstract at the end after we have finished the methods, results, discussion, conclusions and know what our data "says".
+West Nile virus (WNV) is spread by mosquitoes that feed on birds, but not all bird species play the same role in transmission. In this project, we looked at whether house finches might act as  hosts for WNV in Salt Lake City, Utah, based on how often mosquitoes fed on them and how that related to local infection rates. Using blood meal data and infection test results, we ran a simple analysis and found that sites with more mosquito meals from house finches tended to have higher WNV rates. This pattern supports our hypothesis that bird abundance and location, especially for house finches, help shape where the virus spreads the most. Overall, our findings suggest that urban bird communities can strongly influence mosquito–virus dynamics in the city. 
 
 # BACKGROUND
 
-Fill in some text here that provides background info on the WNV system, the blood meal DNA extractions, PCR, sequencing, etc. and the foundation for our question/hypothesis.
+west Nile virus (WNV) is an arbovirus transmitted primairly by mosquitoes. Birds are the main host for the disease however different bird species vary in the amount of the virus they carry. This is known as competence which is their ability to carry more or less of the virus. Studies done on the American crow, blue jay, and house finch, can maintain viremia for multiple days at levels that can infect mosquitoes.
 
-For example, we can use the viremia duration (Kumar et al., 2003) bar plot (make sure to reference sources!!!)  to illustrate the potential importance of house finches in WNV transmission and as the logical foundation for our hypothesis that house finches serve as amplifying hosts for WNV... and the prediction that locations with more house finches in our blood host analysis are also the same locations with higher positive tests for WNV in mosquito pools... 
+In Salt Lake City mosquito blood meal analysis provides a way to infer mosquito host interactions. The data set used for these analysis is (bloodmeal_plusWNV_for_BIOL3070.csv). this includes blood meals from many different species across several sites and years as well as infection rates.By linking bird abundance in blood meals with infection data we can determine whether certain birds transmitte more or less of the virus
 
-NOTE: Examples of data you can plot for the background info at https://github.com/saarman/BIOL3070/
-
+A quick scan through the datasheet would lead you to see that house finches are the most frequent hosts of the blood meals. This suggests that they carry the virus in amounts capable of infection vectors. Combined with experimental evidence of (Komar er al., 2003)
+these observations support the idea that they serve as an amplyfiing host of the WNV in the Salt Lake City area.
 ```{r viremia, include=TRUE, eval=TRUE, warning=FALSE, fig.align='left', fig.width=4.75, fig.height=7}
 # Manually transcribe duration (mean, lo, hi) from the last table column
 duration <- data.frame(
@@ -61,36 +61,118 @@ arrows(duration$lo, bp, duration$hi, bp,
 # STUDY QUESTION and HYPOTHESIS
 
 ## Questions  
-Fill in here, the question we want to answer... e.g. What bird species is acting as WNV amplifying host in Salt Lake City?
+Do mosquito populations in Salt Lake City that feed more frequently on house finches exhibit higher West Nile virus infection rates?
 
 ## Hypothesis 
-Fill in hypothesis... e.g. House finches are acting as important amplifying hosts of WNV in Salt Lake City.
+If house finches act as important amplifying hosts for West Nile virus, then mosquito collection sites with higher proportions of blood meals from house finches should show higher rates of WNV-positive mosquito pools.
   
 ## Prediction
-Fill in prediction... e.g. If house finches are acting as important amplifying hosts, we predict that trapping locations where mosquitoes feed on house finches will also have higher rates of confirmed WNV in tested mosquito pools.
+If house finches act as the best host then they will infect more mosquitoes
 
-# MOTHODS
+# METHODS
+Mosquito blood meal and WNV infection data were analyzed to evaluate whether sites with more mosquito feedings on house finches (Haemorhous mexicanus) also exhibited higher WNV infection rates. The dataset bloodmeal_plusWNV_for_BIOL3070.csv includes the number of blood meals identified to various host species.  
 
-Fill in here, including overview of procedure and methods used for this project.
+Analyses were conducted in R. Data were first  summarized to calculate the proportion of mosquito blood meals from house finches per site. A scatter plot and regression model were then used to test whether this proportion predicts WNV infection rate across sampling locations. 
 
 ## Fill in first analysis
-```{r first-analysis, include=TRUE, eval=TRUE, warning=FALSE, fig.align='left', fig.width=4.75, fig.height=7}
-# put code for analysis here
-```
+```{r
 
-## Fill in second analysis/plot
-```{r second-analysis-or-plot, include=TRUE, eval=TRUE, warning=FALSE, fig.align='left', fig.width=4.75, fig.height=7}
-# put code for plotting here
+# METHODS
+
+# Install and load ggplot2 -----------------------------------------------------
+if (!require(ggplot2)) {
+  install.packages("ggplot2")
+  library(ggplot2)
+} else {
+  library(ggplot2)
+}
+
+# ----------------------------------------------------------------------------- 
+# STEP 1: Read in and inspect the data
+# -----------------------------------------------------------------------------
+bloodmeal <- read.csv("bloodmeal_plusWNV_for_BIOL3070 (1).csv")
+
+# Clean column names (remove quotes or spaces)
+colnames(bloodmeal) <- gsub('"', '', trimws(colnames(bloodmeal)))
+
+# Quick structure check
+str(bloodmeal)
+
+# ----------------------------------------------------------------------------- 
+# STEP 2: Summarize house finch data and infection rates by site
+# -----------------------------------------------------------------------------
+# Identify all columns that record host counts
+host_cols <- grep("^host_", names(bloodmeal), value = TRUE)
+
+# Initialize summary vectors
+unique_sites <- unique(bloodmeal$loc_year)
+total_bloodmeals <- numeric(length(unique_sites))
+finch_bloodmeals <- numeric(length(unique_sites))
+mean_WNV_rate <- numeric(length(unique_sites))
+
+# Loop through each site to calculate totals
+for (i in seq_along(unique_sites)) {
+  site_data <- bloodmeal[bloodmeal$loc_year == unique_sites[i], ]
+  total_bloodmeals[i] <- sum(site_data[, host_cols])
+  finch_bloodmeals[i] <- sum(site_data$host_House_finch)
+  mean_WNV_rate[i] <- mean(site_data$loc_rate, na.rm = TRUE)
+}
+
+# Create summarized dataset
+finch_summary <- data.frame(
+  loc_year = unique_sites,
+  total_bloodmeals = total_bloodmeals,
+  finch_bloodmeals = finch_bloodmeals,
+  finch_prop = finch_bloodmeals / total_bloodmeals,
+  mean_WNV_rate = mean_WNV_rate
+)
+
+# Remove incomplete rows
+finch_summary <- finch_summary[complete.cases(finch_summary), ]
+
+# Preview summary
+head(finch_summary)
+
+# ----------------------------------------------------------------------------- 
+# STEP 3: Plot relationship between house finch blood meals and WNV rate
+# -----------------------------------------------------------------------------
+
+# Close any open plot devices to prevent invalid graphics state error
+while (!is.null(dev.list())) dev.off()
+
+# Now make the plot
+ggplot(finch_summary, aes(x = finch_prop, y = mean_WNV_rate)) +
+  geom_point(color = "darkred", size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", color = "black", se = TRUE, linetype = "dashed") +
+  labs(
+    title = "Relationship Between House Finch Blood Meals and WNV Infection Rate",
+    x = "Proportion of Blood Meals from House Finches",
+    y = "Mean WNV Infection Rate (loc_rate)"
+  ) +
+  theme_minimal(base_size = 13)
+
+# ----------------------------------------------------------------------------- 
+# STEP 4: Fit a linear model to test the relationship
+# -----------------------------------------------------------------------------
+finch_model <- lm(mean_WNV_rate ~ finch_prop, data = finch_summary)
+
+# Display regression summary (coefficients, R², p-values)
+summary(finch_model)
+
 ```
 
 # DISCUSSION
+Our results showed a positive relationship between the proportion of mosquito blood meals from house finches and the mean West Nile virus (WNV) infection rate across Salt Lake City locations. This supports our hypothesis that house finches act as  hosts for WNV in urban areas. Their high abundance near human-modified habitats likely increases contact rates with mosquito vectors. 
 
+This pattern aligns with prior findings that species with moderate viremia durations, such as house finches, can enhance WNV amplification (Komar et al., 2003). Variation in mosquito sampling effort and unmeasured environmental factors could also influence these patterns. Future work incorporating bird abundance, climate, and mosquito species data would help clarify these relationships. Overall, our analysis highlights how bird community composition and spatial distribution can shape mosquito–virus transmissions in Salt Lake City. 
 ## Interpretation - fill in analysis
-
+The linear model assessing the relationship between the proportion of house finch blood meals and the mean WNV infection rate shows a positive slope, suggesting that as the proportion of mosquito blood meals from house finches increased, the rate of WNV-positive mosquito pools also rose. the correlation strength  supports our hypothesis that house finches contribute significantly to WNV transmission in Salt Lake City. The positive regression coefficient and statistical significance (if p < 0.05) indicate that areas with higher house finch feeding frequency are associated with increased WNV presence, consistent with their known susceptibility. 
 ## Interpretation - fill in analysis/plot
-
+The scatterplot with a regression line visually reinforces this relationship. Points representing each location show a general upward trend, indicating that sites with a greater proportion of house finch blood meals tend to have higher mean WNV rates.  This suggests that local bird abundance and host use patterns may strongly influence the spatial distribution of WNV transmission risk. The plot also emphasizes how a few locations with especially high finch feeding rates correspond to higher infection prevalence, supporting the idea that house finch density and feeding frequency drive WNV dynamics in urban areas. 
 # CONCLUSION
+Overall, what we found was that places where mosquitoes fed more on house finches also had higher WNV infection rates. This lines up with our idea that house finches could be helping spread the virus in Salt Lake City. They’re really common in neighborhoods and parks, so mosquitoes are probably feeding on them a lot, which might make those areas kind of “hotspots” for WNV. 
 
+It makes sense with what other studies have shown too, like Komar et al. (2003), that some birds can keep the virus around because of how long they stay viremic. There’s still a lot we didn’t look at, like how whether or mosquito species might change the results, but this gives a good first look at how bird abundance and where they are could affect where WNV shows up. 
 # REFERENCES     
 
 1. Komar N, Langevin S, Hinten S, Nemeth N, Edwards E, Hettler D, Davis B, Bowen R, Bunning M. Experimental infection of North American birds with the New York 1999 strain of West Nile virus. Emerg Infect Dis. 2003 Mar;9(3):311-22. https://doi.org/10.3201/eid0903.020628
