@@ -1,0 +1,96 @@
+---
+title: "R Markdown Final Individual Project"
+author: "Ethan Sharp"
+date: "`r Sys.Date()`"
+output:
+  github_document:
+    toc: true
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# ABSTRACT
+
+
+
+# BACKGROUND
+ does higher education lead to a higher likelyhood of heart attack
+ 
+ Higher education leads to a higher chance of heart attack because of the amount of stress
+
+
+# METHODS
+we will use a chi squared, binomial linear regression, and ANOVA
+
+
+# DISCUSSION
+
+## Interpretation - fill in analysis
+# Example: Scatterplot with regression line
+
+# (Inspired by R Graph Gallery scatter plot example)
+
+# Load packages
+
+library(ggplot2)
+
+# Example dataset (replace this with your real CSV import)
+
+# health_data <- read.csv("your_data.csv")
+
+# Simulated example data for demonstration
+
+set.seed(123)
+health_data <- data.frame(
+education_years = sample(8:20, 100, replace = TRUE),  # years of education
+heart_attack = rbinom(100, 1, prob = 0.1 + 0.02 * (8:20)[sample(1:13, 100, replace = TRUE)] / 20)
+)
+
+# Plot: relationship between education level and heart attack rate
+
+```{r}
+# Example: Scatterplot with regression line
+
+# (Inspired by R Graph Gallery scatter plot example)
+
+# Load packages
+
+library(ggplot2)
+
+# Example dataset (replace this with your real CSV import)
+
+# health_data <- read.csv("your_data.csv")
+
+# Simulated example data for demonstration
+
+set.seed(123)
+health_data <- data.frame(
+education_years = sample(8:20, 100, replace = TRUE),  # years of education
+heart_attack = rbinom(100, 1, prob = 0.1 + 0.02 * (8:20)[sample(1:13, 100, replace = TRUE)] / 20)
+)
+
+# Plot: relationship between education level and heart attack rate
+
+ggplot(health_data, aes(x = education_years, y = heart_attack)) +
+geom_jitter(width = 0.2, height = 0.02, alpha = 0.6, color = "darkred") +
+geom_smooth(method = "glm", method.args = list(family = "binomial"), se = TRUE, color = "black") +
+labs(
+title = "Relationship Between Education Level and Heart Attack Likelihood",
+x = "Years of Education",
+y = "Heart Attack Occurrence (0 = No, 1 = Yes)"
+) +
+theme_minimal(base_size = 13)
+
+```
+
+# REFERENCES     
+
+
+
+
+2. ChatGPT. OpenAI, version Jan 2025. Used as a reference for functions such as plot() and to correct syntax errors. Accessed `r Sys.Date()`.
+
+
+
