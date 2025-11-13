@@ -1,7 +1,7 @@
 comp bio gorup final
 ================
 Ethan Sharp
-2025-11-11
+2025-11-13
 
 - [ABSTRACT](#abstract)
 - [BACKGROUND](#background)
@@ -75,6 +75,8 @@ ggplot(heart_data, aes(x = Outcome, y = StressLevel, fill = Outcome)) +
   )
 ```
 
+![](comp_bio_final_files/figure-gfm/Heart%20Attack%20vs%20StressLevel%20Violin%20Plot-1.png)<!-- -->
+
 Stress vs HA Alt (Ridge Plot)
 
 ``` r
@@ -98,6 +100,10 @@ ggplot(heart_data, aes(x = StressLevel, y = Outcome, fill = Outcome)) +
     axis.title.x = element_text(face = "bold")
   )
 ```
+
+    ## Picking joint bandwidth of 0.674
+
+![](comp_bio_final_files/figure-gfm/Stress%20vs%20Heart%20Attack%20Ridge%20Plot-1.png)<!-- -->
 
 Gender vs HA (Heat Map)
 
@@ -132,6 +138,13 @@ ggplot(gender_counts, aes(x = Gender, y = Outcome, fill = count)) +
   )
 ```
 
+    ## Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+    ## ℹ Please use `linewidth` instead.
+    ## This warning is displayed once every 8 hours.
+    ## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
+    ## generated.
+
+![](comp_bio_final_files/figure-gfm/Gender%20vs%20Heart%20Attack%20Heat%20Plot-1.png)<!-- -->
 Gender, Stress Level, and Education Level vs HA
 
 ``` r
@@ -162,6 +175,7 @@ ggplot(heart_data, aes(
   )
 ```
 
+![](comp_bio_final_files/figure-gfm/Stress%20Levels,%20Education%20Level,%20Gender,%20Heart%20Attack-1.png)<!-- -->
 Education Level vs HA (Lollipop Graph)
 
 ``` r
@@ -187,6 +201,8 @@ ggplot(edu_counts, aes(x = EducationLevel, y = count, color = Outcome)) +
   theme_minimal(base_size = 14) +
   theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 ```
+
+![](comp_bio_final_files/figure-gfm/Heart%20Attack%20Vs%20Education%20Level%20lollipop%20Plot-1.png)<!-- -->
 
 # DISCUSSION
 
